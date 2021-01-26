@@ -9,18 +9,20 @@ export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
   @Get()
-  getAllProducts(): BaseResponse<ProductsResponse> {
+  async getAllProducts(): Promise<BaseResponse<ProductsResponse>> {
     return new BaseResponse(
       200,
-      new ProductsResponse(this.productsService.getAll()),
+      new ProductsResponse(await this.productsService.getAll()),
     );
   }
 
   @Get('/:id')
-  getById(@Param('id') id: string): BaseResponse<ProductResponse> {
+  async getById(
+    @Param('id') id: string,
+  ): Promise<BaseResponse<ProductResponse>> {
     return new BaseResponse(
       200,
-      new ProductResponse(this.productsService.getById(id)),
+      new ProductResponse(await this.productsService.getById(id)),
     );
   }
 }
