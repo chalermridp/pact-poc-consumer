@@ -1,24 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
 @Injectable()
 export class ProductsAPI {
-  private url: string;
+  private url = 'http://localhost:3000';
 
-  constructor(private configService: ConfigService) {
-    this.url = configService.get('apiUrl');
+  setUrl(url: string) {
+    this.url = url;
   }
 
   async getAll() {
-    return await axios
-      .get(`${this.url}/products`)
-      .then((response) => response.data.data.products);
+    return axios.get(`${this.url}/products`);
   }
 
   async getById(id) {
-    return await axios
-      .get(`${this.url}/products/${id}`)
-      .then((response) => response.data.data.product);
+    return axios.get(`${this.url}/products/${id}`);
   }
 }

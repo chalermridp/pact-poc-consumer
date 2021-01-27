@@ -5,21 +5,22 @@ import { ProductsModel } from './products.model';
 
 @Injectable()
 export class ProductsService {
-  constructor(private productsApi: ProductsAPI) {}
+  constructor(private productsApi: ProductsAPI) { }
 
   async getAll(): Promise<ProductsModel[]> {
-    return await this.productsApi.getAll();
+    const response = await this.productsApi.getAll();
+    return response.data.data.products;
   }
 
   async getById(id: string): Promise<ProductsModel> {
     try {
-      return await this.productsApi.getById(id);
+      const response = await this.productsApi.getById(id);
+      return response.data.data.product;
     } catch (error) {
-      console.log(error);
       throw new BaseException(
-        error.response.data.code,
-        error.response.data.error_name,
-        error.response.data.error_message,
+        error.response.data.data.code,
+        error.response.data.data.error_name,
+        error.response.data.data.error_message,
       );
     }
   }
