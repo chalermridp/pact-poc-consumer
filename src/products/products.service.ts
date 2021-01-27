@@ -1,27 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
-import { BaseException } from 'src/common/exceptions/base.exception';
+import { BaseException } from '../common/exceptions/base.exception';
+import { ProductsAPI } from './products.api';
 import { ProductsModel } from './products.model';
 
 @Injectable()
 export class ProductsService {
-  constructor(private configService: ConfigService) {
-    this.apiUrl = this.configService.get('apiUrl');
-  }
-
-  private apiUrl: string;
+  constructor(private productsApi: ProductsAPI) {}
 
   async getAll(): Promise<ProductsModel[]> {
-    const response = await axios.get(`${this.apiUrl}/products`);
-    return response.data.data.products;
+    return await this.productsApi.getAll();
   }
 
   async getById(id: string): Promise<ProductsModel> {
     try {
-      const response = await axios.get(`${this.apiUrl}/products/${id}`);
-      return response.data;
+      return await this.productsApi.getById(id);
     } catch (error) {
+      console.log(error);
       throw new BaseException(
         error.response.data.code,
         error.response.data.error_name,
