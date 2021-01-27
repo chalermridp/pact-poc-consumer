@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Interaction, Pact } from '@pact-foundation/pact';
-import { like } from '@pact-foundation/pact/dsl/matchers';
 import path = require('path');
 import { ProductsAPI } from './products.api';
 
@@ -39,6 +38,25 @@ describe('Pack Testing', () => {
     },
   };
 
+  const productResponse = {
+    code: 200,
+    data: {
+      product: {
+        id: '1',
+        sku: '111',
+        name_en: 'water',
+        price: 30,
+        is_active: true,
+      },
+    },
+  };
+
+  const productNotFoundErrorResponse = {
+    code: 404,
+    error_name: 'not_found',
+    error_message: 'product not found',
+  };
+
   beforeAll(() =>
     provider.setup().then(async () => {
       const moduleRef: TestingModule = await Test.createTestingModule({
@@ -59,8 +77,8 @@ describe('Pack Testing', () => {
   describe('getting all products', () => {
     beforeAll(() => {
       const interaction = new Interaction()
-        .uponReceiving('a request for the products with the builder pattern')
-        .given('have a list of products')
+        .given('products exist')
+        .uponReceiving('get all products')
         .withRequest({
           method: 'GET',
           path: '/products',
@@ -78,13 +96,75 @@ describe('Pack Testing', () => {
       return provider.addInteraction(interaction);
     });
 
-    it('returns the correct response', (done) => {
+    it('returns all products', (done) => {
       productsAPI.setUrl(url);
       productsAPI.getAll().then((response: any) => {
         expect(response.status).toBe(200);
         expect(response.data).toEqual(allProductsResponse);
         done();
       }, done);
+    });
+  });
+
+  describe('getting product by id', () => {
+    beforeAll(() => {
+      const interaction = new Interaction()
+        .given('product id 1 exists')
+        .uponReceiving('get product with id 1')
+        .withRequest({
+          method: 'GET',
+          path: '/products/1',
+          headers: {
+            Accept: 'application/json',
+          },
+        })
+        .willRespondWith({
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          body: like(productResponse),
+        });
+      return provider.addInteraction(interaction);
+    });
+
+    it('returns product with id 1', (done) => {
+      productsAPI.setUrl(url);
+      productsAPI.getById(1).then((response: any) => {
+        expect(response.status).toBe(200);
+        expect(response.data).toEqual(productResponse);
+        done();
+      }, done);
+    });
+  });
+
+  describe('getting product by id which not exist', () => {
+    beforeAll(() => {
+      const interaction = new Interaction()
+        .given('product id 555 not exist')
+        .uponReceiving('get product not found error')
+        .withRequest({
+          method: 'GET',
+          path: '/products/555',
+          headers: {
+            Accept: 'application/json',
+          },
+        })
+        .willRespondWith({
+          status: 404,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          body: like(productNotFoundErrorResponse),
+        });
+      return provider.addInteraction(interaction);
+    });
+
+    it('returns product not found error', () => {
+      productsAPI.setUrl(url);
+      expect(productsAPI.getById(555)).rejects.toThrow(
+        'Request failed with status code 404',
+      );
     });
   });
 });
