@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Interaction, Pact } from '@pact-foundation/pact';
+import { like } from '@pact-foundation/pact/dsl/matchers';
 import path = require('path');
 import { ProductsAPI } from './products.api';
 
