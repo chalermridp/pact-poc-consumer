@@ -61,8 +61,8 @@ describe('Pact', () => {
     productsApi = moduleRef.get(ProductsAPI);
 
     provider = pactFactory.createContractBetween({
-      consumer: 'ConsumerServiceName',
-      provider: 'ProducerServiceName',
+      consumer: 'PactPocConsumer',
+      provider: 'PactPocProvider',
     });
 
     await provider.setup();

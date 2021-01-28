@@ -48,7 +48,7 @@
     },
     {
       "description": "get product with id 1",
-      "providerState": "product id 1 exists",
+      "providerState": "products id 1 exists",
       "request": {
         "method": "GET",
         "path": "/products/1"
@@ -69,6 +69,30 @@
               "is_active": true
             }
           }
+        },
+        "matchingRules": {
+          "$.body": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "get error product not found",
+      "providerState": "products id 3 does not exist",
+      "request": {
+        "method": "GET",
+        "path": "/products/3"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "code": 404,
+          "error_name": "not_found",
+          "error_message": "product not found"
         },
         "matchingRules": {
           "$.body": {
