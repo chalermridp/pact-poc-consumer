@@ -5,8 +5,6 @@ import path = require('path');
 import { ProductsAPI } from './products.api';
 
 describe('Pack Testing', () => {
-  const url = 'http://localhost:3000';
-
   const provider = new Pact({
     consumer: 'PactPocConsumer',
     provider: 'PactPocProvider',
@@ -58,114 +56,107 @@ describe('Pack Testing', () => {
     error_message: 'product not found',
   };
 
-  beforeAll(() =>
-    provider.setup().then(async () => {
-      const moduleRef: TestingModule = await Test.createTestingModule({
-        providers: [ProductsAPI],
-      }).compile();
-      productsAPI = await moduleRef.resolve(ProductsAPI);
-    }),
-  );
+  beforeAll(async () => {
+    console.log('beforeAll');
+    await provider.setup();
+
+    const interaction = new Interaction()
+      .given('products exist')
+      .uponReceiving('get all products')
+      .withRequest({
+        method: 'GET',
+        path: '/products',
+      })
+      .willRespondWith({
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: like(allProductsResponse),
+      });
+    await provider.addInteraction(interaction);
+
+    const interaction2 = new Interaction()
+      .given('product id 1 exists')
+      .uponReceiving('get product with id 1')
+      .withRequest({
+        method: 'GET',
+        path: '/products/1',
+      })
+      .willRespondWith({
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: like(productResponse),
+      });
+    await provider.addInteraction(interaction2);
+
+    const moduleRef: TestingModule = await Test.createTestingModule({
+      providers: [ProductsAPI],
+    }).compile();
+    productsAPI = await moduleRef.resolve<ProductsAPI>(ProductsAPI);
+    productsAPI.setUrl(provider.mockService.baseUrl);
+  });
 
   afterAll(() => {
+    console.log('afterAll');
     provider.finalize();
   });
 
   afterEach(() => {
+    console.log('afterEach');
     provider.verify();
   });
 
   describe('getting all products', () => {
-    beforeAll(() => {
-      const interaction = new Interaction()
-        .given('products exist')
-        .uponReceiving('get all products')
-        .withRequest({
-          method: 'GET',
-          path: '/products',
-          headers: {
-            Accept: 'application/json',
-          },
-        })
-        .willRespondWith({
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          body: like(allProductsResponse),
-        });
-      return provider.addInteraction(interaction);
-    });
+    console.log('hello 111');
 
-    it('returns all products', (done) => {
-      productsAPI.setUrl(url);
-      productsAPI.getAll().then((response: any) => {
-        expect(response.status).toBe(200);
-        expect(response.data).toEqual(allProductsResponse);
-        done();
-      }, done);
+    it('returns all products', async () => {
+      console.log('start 111');
+      const response = await productsAPI.getAll();
+      expect(response.status).toBe(200);
+      expect(response.data).toEqual(allProductsResponse);
+      console.log('finish 111');
     });
   });
 
   describe('getting product by id', () => {
-    beforeAll(() => {
-      const interaction = new Interaction()
-        .given('product id 1 exists')
-        .uponReceiving('get product with id 1')
-        .withRequest({
-          method: 'GET',
-          path: '/products/1',
-          headers: {
-            Accept: 'application/json',
-          },
-        })
-        .willRespondWith({
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          body: like(productResponse),
-        });
-      return provider.addInteraction(interaction);
-    });
+    console.log('hello 222');
 
-    it('returns product with id 1', (done) => {
-      productsAPI.setUrl(url);
-      productsAPI.getById(1).then((response: any) => {
-        expect(response.status).toBe(200);
-        expect(response.data).toEqual(productResponse);
-        done();
-      }, done);
+    it('returns product with id 1', async () => {
+      console.log('start 222');
+      const response = await productsAPI.getById(1);
+      expect(response.status).toBe(200);
+      expect(response.data).toEqual(productResponse);
+      console.log('finish 222');
     });
   });
 
-  describe('getting product by id which not exist', () => {
-    beforeAll(() => {
-      const interaction = new Interaction()
-        .given('product id 555 not exist')
-        .uponReceiving('get product not found error')
-        .withRequest({
-          method: 'GET',
-          path: '/products/555',
-          headers: {
-            Accept: 'application/json',
-          },
-        })
-        .willRespondWith({
-          status: 404,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          body: like(productNotFoundErrorResponse),
-        });
-      return provider.addInteraction(interaction);
-    });
+  // describe('getting product by id', () => {
+  //   console.log('hello 333');
+  //   beforeAll(async () => {
+  //     const interaction = new Interaction()
+  //       .given('product id 555 not exist')
+  //       .uponReceiving('get product not found error')
+  //       .withRequest({
+  //         method: 'GET',
+  //         path: '/products/555',
+  //       })
+  //       .willRespondWith({
+  //         status: 404,
+  //         headers: {
+  //           'Content-Type': 'application/json; charset=utf-8',
+  //         },
+  //         body: like(productNotFoundErrorResponse),
+  //       });
+  //     return await provider.addInteraction(interaction);
+  //   });
 
-    it('returns product not found error', () => {
-      productsAPI.setUrl(url);
-      expect(productsAPI.getById(555)).rejects.toThrow(
-        'Request failed with status code 404',
-      );
-    });
-  });
+  //   it('returns product not found error', async () => {
+  //     productsAPI.setUrl(provider.mockService.baseUrl);
+  //     const response = await productsAPI.getById(555);
+  //     expect(response).rejects.toThrow('Request failed with status code 404');
+  //   });
+  // });
 });
