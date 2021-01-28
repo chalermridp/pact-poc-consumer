@@ -1,5 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { BaseResponse } from 'src/common/responses/base.reponse';
+import { BaseResponse } from '../common/responses/base.reponse';
 import { ProductsService } from './products.service';
 import { ProductResponse } from './responses/product.response';
 import { ProductsResponse } from './responses/products.response';

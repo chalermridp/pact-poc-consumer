@@ -1,20 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { Interaction, Pact } from '@pact-foundation/pact';
-import { like } from '@pact-foundation/pact/dsl/matchers';
-import path = require('path');
+import { Pact } from '@pact-foundation/pact';
+import { Test } from '@nestjs/testing';
+import { PactFactory } from 'nestjs-pact';
+import { PactModule } from '../../test/pact/pact.module';
 import { ProductsAPI } from './products.api';
+import { ProductsModule } from './products.module';
+import { like } from '@pact-foundation/pact/dsl/matchers';
 
-describe('Pack Testing', () => {
-  const provider = new Pact({
-    consumer: 'PactPocConsumer',
-    provider: 'PactPocProvider',
-    log: path.resolve(process.cwd(), 'logs', 'pact.log'),
-    dir: path.resolve(process.cwd(), 'pacts'),
-    logLevel: 'info',
-    spec: 2,
-  });
+describe('Pact', () => {
+  let pactFactory: PactFactory;
+  let provider: Pact;
+  let productsApi: ProductsAPI;
 
-  let productsAPI: ProductsAPI;
   const allProductsResponse = {
     code: 200,
     data: {
@@ -57,106 +53,110 @@ describe('Pack Testing', () => {
   };
 
   beforeAll(async () => {
-    console.log('beforeAll');
-    await provider.setup();
-
-    const interaction = new Interaction()
-      .given('products exist')
-      .uponReceiving('get all products')
-      .withRequest({
-        method: 'GET',
-        path: '/products',
-      })
-      .willRespondWith({
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-        body: like(allProductsResponse),
-      });
-    await provider.addInteraction(interaction);
-
-    const interaction2 = new Interaction()
-      .given('product id 1 exists')
-      .uponReceiving('get product with id 1')
-      .withRequest({
-        method: 'GET',
-        path: '/products/1',
-      })
-      .willRespondWith({
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-        body: like(productResponse),
-      });
-    await provider.addInteraction(interaction2);
-
-    const moduleRef: TestingModule = await Test.createTestingModule({
-      providers: [ProductsAPI],
+    const moduleRef = await Test.createTestingModule({
+      imports: [PactModule, ProductsModule],
     }).compile();
-    productsAPI = await moduleRef.resolve<ProductsAPI>(ProductsAPI);
-    productsAPI.setUrl(provider.mockService.baseUrl);
+
+    pactFactory = moduleRef.get(PactFactory);
+    productsApi = moduleRef.get(ProductsAPI);
+
+    provider = pactFactory.createContractBetween({
+      consumer: 'ConsumerServiceName',
+      provider: 'ProducerServiceName',
+    });
+
+    await provider.setup();
   });
 
-  afterAll(() => {
-    console.log('afterAll');
-    provider.finalize();
-  });
+  afterEach(() => provider.verify());
 
-  afterEach(() => {
-    console.log('afterEach');
-    provider.verify();
-  });
+  afterAll(() => provider.finalize());
 
-  describe('getting all products', () => {
-    console.log('hello 111');
+  describe('get all products', () => {
+    beforeAll(() =>
+      provider.addInteraction({
+        state: 'products exist',
+        uponReceiving: 'get all products',
+        withRequest: {
+          method: 'GET',
+          path: '/products',
+        },
+        willRespondWith: {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+          body: like(allProductsResponse),
+        },
+      }),
+    );
 
-    it('returns all products', async () => {
-      console.log('start 111');
-      const response = await productsAPI.getAll();
-      expect(response.status).toBe(200);
-      expect(response.data).toEqual(allProductsResponse);
-      console.log('finish 111');
+    it('return all products', (done) => {
+      productsApi.setUrl(provider.mockService.baseUrl);
+      productsApi.getAll().then((response) => {
+        expect(response.status).toBe(200);
+        expect(response.data).toEqual(allProductsResponse);
+        done();
+      }, done);
     });
   });
 
-  describe('getting product by id', () => {
-    console.log('hello 222');
+  describe('get product by id', () => {
+    describe('product exists', () => {
+      beforeAll(() =>
+        provider.addInteraction({
+          state: 'products id 1 exists',
+          uponReceiving: 'get product with id 1',
+          withRequest: {
+            method: 'GET',
+            path: '/products/1',
+          },
+          willRespondWith: {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+            body: like(productResponse),
+          },
+        }),
+      );
 
-    it('returns product with id 1', async () => {
-      console.log('start 222');
-      const response = await productsAPI.getById(1);
-      expect(response.status).toBe(200);
-      expect(response.data).toEqual(productResponse);
-      console.log('finish 222');
+      it('return product', (done) => {
+        productsApi.setUrl(provider.mockService.baseUrl);
+        productsApi.getById(1).then((response) => {
+          expect(response.status).toBe(200);
+          expect(response.data).toEqual(productResponse);
+          done();
+        }, done);
+      });
+    });
+
+    describe('product does not exists', () => {
+      beforeAll(() =>
+        provider.addInteraction({
+          state: 'products id 3 does not exist',
+          uponReceiving: 'get error product not found',
+          withRequest: {
+            method: 'GET',
+            path: '/products/3',
+          },
+          willRespondWith: {
+            status: 404,
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+            body: like(productNotFoundErrorResponse),
+          },
+        }),
+      );
+
+      it('got not found error', (done) => {
+        productsApi.setUrl(provider.mockService.baseUrl);
+        expect(productsApi.getById(3)).rejects.toThrow(
+          'Request failed with status code 404',
+        );
+        done();
+      });
     });
   });
-
-  // describe('getting product by id', () => {
-  //   console.log('hello 333');
-  //   beforeAll(async () => {
-  //     const interaction = new Interaction()
-  //       .given('product id 555 not exist')
-  //       .uponReceiving('get product not found error')
-  //       .withRequest({
-  //         method: 'GET',
-  //         path: '/products/555',
-  //       })
-  //       .willRespondWith({
-  //         status: 404,
-  //         headers: {
-  //           'Content-Type': 'application/json; charset=utf-8',
-  //         },
-  //         body: like(productNotFoundErrorResponse),
-  //       });
-  //     return await provider.addInteraction(interaction);
-  //   });
-
-  //   it('returns product not found error', async () => {
-  //     productsAPI.setUrl(provider.mockService.baseUrl);
-  //     const response = await productsAPI.getById(555);
-  //     expect(response).rejects.toThrow('Request failed with status code 404');
-  //   });
-  // });
 });
