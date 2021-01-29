@@ -1,5 +1,5 @@
 import { Pact } from '@pact-foundation/pact';
-import { Test } from '@nestjs/testing';
+import { Test } from '@nestjs/testing/test';
 import { PactFactory } from 'nestjs-pact';
 import { PactModule } from '../../test/pact/pact.module';
 import { ProductsAPI } from './products.api';
@@ -7,10 +7,6 @@ import { ProductsModule } from './products.module';
 import { like } from '@pact-foundation/pact/dsl/matchers';
 
 describe('Pact', () => {
-  let pactFactory: PactFactory;
-  let provider: Pact;
-  let productsApi: ProductsAPI;
-
   const allProductsResponse = {
     code: 200,
     data: {
@@ -52,6 +48,10 @@ describe('Pact', () => {
     error_message: 'product not found',
   };
 
+  let pactFactory: PactFactory;
+  let provider: Pact;
+  let productsApi: ProductsAPI;
+
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PactModule, ProductsModule],
@@ -75,29 +75,30 @@ describe('Pact', () => {
   afterAll(() => provider.finalize());
 
   describe('get all products', () => {
-    beforeAll(async () => {
-      console.log('beforeAll get all products 333');
-      await provider.addInteraction({
-        state: 'products exist',
-        uponReceiving: 'get all products',
-        withRequest: {
-          method: 'GET',
-          path: '/products',
-        },
-        willRespondWith: {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          body: like(allProductsResponse),
-        },
-      });
-      console.log('beforeAll get all products 444');
-    });
+    // beforeAll(async () => {
+    //   console.log('beforeAll get all products 333');
+    //   await provider.addInteraction({
+    //     state: 'products exist',
+    //     uponReceiving: 'get all products',
+    //     withRequest: {
+    //       method: 'GET',
+    //       path: '/products',
+    //     },
+    //     willRespondWith: {
+    //       status: 200,
+    //       headers: {
+    //         'Content-Type': 'application/json; charset=utf-8',
+    //       },
+    //       body: like(allProductsResponse),
+    //     },
+    //   });
+    //   console.log('beforeAll get all products 444');
+    // });
 
     it('return all products', (done) => {
       console.log('it get all products 555');
-      productsApi.setUrl(provider.mockService.baseUrl);
+      // productsApi.setUrl(provider.mockService.baseUrl);
+      productsApi.setUrl('http://localhost:3000');
       productsApi.getAll().then((response) => {
         expect(response.status).toBe(200);
         expect(response.data).toEqual(allProductsResponse);
@@ -107,29 +108,30 @@ describe('Pact', () => {
 
     describe('get product by id', () => {
       describe('product exists', () => {
-        beforeAll(async () => {
-          console.log('beforeAll product exists 333');
-          await provider.addInteraction({
-            state: 'products id 1 exists',
-            uponReceiving: 'get product with id 1',
-            withRequest: {
-              method: 'GET',
-              path: '/products/1',
-            },
-            willRespondWith: {
-              status: 200,
-              headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-              },
-              body: like(productResponse),
-            },
-          });
-          console.log('beforeAll product exists 444');
-        });
+        // beforeAll(async () => {
+        //   console.log('beforeAll product exists 333');
+        //   await provider.addInteraction({
+        //     state: 'products id 1 exists',
+        //     uponReceiving: 'get product with id 1',
+        //     withRequest: {
+        //       method: 'GET',
+        //       path: '/products/1',
+        //     },
+        //     willRespondWith: {
+        //       status: 200,
+        //       headers: {
+        //         'Content-Type': 'application/json; charset=utf-8',
+        //       },
+        //       body: like(productResponse),
+        //     },
+        //   });
+        //   console.log('beforeAll product exists 444');
+        // });
 
         it('return product id 1', (done) => {
           console.log('it product exists 555');
-          productsApi.setUrl(provider.mockService.baseUrl);
+          // productsApi.setUrl(provider.mockService.baseUrl);
+          productsApi.setUrl('http://localhost:3000');
           productsApi.getById(1).then((response) => {
             expect(response.status).toBe(200);
             expect(response.data).toEqual(productResponse);
@@ -139,29 +141,30 @@ describe('Pact', () => {
       });
 
       describe('product does not exists', () => {
-        beforeAll(async () => {
-          console.log('beforeAll product does not exists 333');
-          await provider.addInteraction({
-            state: 'products id 3 does not exist',
-            uponReceiving: 'get error product not found',
-            withRequest: {
-              method: 'GET',
-              path: '/products/3',
-            },
-            willRespondWith: {
-              status: 404,
-              headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-              },
-              body: like(productNotFoundErrorResponse),
-            },
-          });
-          console.log('beforeAll product does not exists 444');
-        });
+        // beforeAll(async () => {
+        //   console.log('beforeAll product does not exists 333');
+        //   await provider.addInteraction({
+        //     state: 'products id 3 does not exist',
+        //     uponReceiving: 'get error product not found',
+        //     withRequest: {
+        //       method: 'GET',
+        //       path: '/products/3',
+        //     },
+        //     willRespondWith: {
+        //       status: 404,
+        //       headers: {
+        //         'Content-Type': 'application/json; charset=utf-8',
+        //       },
+        //       body: like(productNotFoundErrorResponse),
+        //     },
+        //   });
+        //   console.log('beforeAll product does not exists 444');
+        // });
 
         it('return not found error', (done) => {
           console.log('it product does not exists 555');
-          productsApi.setUrl(provider.mockService.baseUrl);
+          // productsApi.setUrl(provider.mockService.baseUrl);
+          productsApi.setUrl('http://localhost:3000');
           expect(productsApi.getById(3)).rejects.toThrow(
             'Request failed with status code 404',
           );

@@ -55,27 +55,28 @@ pactWith(
       }).compile();
 
       productsApi = moduleRef.get(ProductsAPI);
-      productsApi.setUrl(provider.mockService.baseUrl);
+      // productsApi.setUrl(provider.mockService.baseUrl);
+      productsApi.setUrl('http://localhost:3000');
     });
 
     describe('get all products', () => {
-      beforeAll(() => {
-        provider.addInteraction({
-          state: 'products exist',
-          uponReceiving: 'get all products',
-          withRequest: {
-            method: 'GET',
-            path: '/products',
-          },
-          willRespondWith: {
-            status: 200,
-            headers: {
-              'Content-Type': 'application/json; charset=utf-8',
-            },
-            body: like(allProductsResponse),
-          },
-        });
-      });
+      // beforeAll(() => {
+      //   provider.addInteraction({
+      //     state: 'products exist',
+      //     uponReceiving: 'get all products',
+      //     withRequest: {
+      //       method: 'GET',
+      //       path: '/products',
+      //     },
+      //     willRespondWith: {
+      //       status: 200,
+      //       headers: {
+      //         'Content-Type': 'application/json; charset=utf-8',
+      //       },
+      //       body: like(allProductsResponse),
+      //     },
+      //   });
+      // });
 
       it('return all products', (done) => {
         productsApi.getAll().then((response) => {
@@ -88,23 +89,23 @@ pactWith(
 
     describe('get product by id', () => {
       describe('product exists', () => {
-        beforeAll(() => {
-          provider.addInteraction({
-            state: 'products id 1 exists',
-            uponReceiving: 'get product with id 1',
-            withRequest: {
-              method: 'GET',
-              path: '/products/1',
-            },
-            willRespondWith: {
-              status: 200,
-              headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-              },
-              body: like(productResponse),
-            },
-          });
-        });
+        // beforeAll(() => {
+        //   provider.addInteraction({
+        //     state: 'products id 1 exists',
+        //     uponReceiving: 'get product with id 1',
+        //     withRequest: {
+        //       method: 'GET',
+        //       path: '/products/1',
+        //     },
+        //     willRespondWith: {
+        //       status: 200,
+        //       headers: {
+        //         'Content-Type': 'application/json; charset=utf-8',
+        //       },
+        //       body: like(productResponse),
+        //     },
+        //   });
+        // });
 
         it('return product id 1', (done) => {
           productsApi.getById(1).then((response) => {
@@ -116,23 +117,23 @@ pactWith(
       });
 
       describe('product does not exists', () => {
-        beforeAll(() => {
-          provider.addInteraction({
-            state: 'products id 3 does not exist',
-            uponReceiving: 'get error product not found',
-            withRequest: {
-              method: 'GET',
-              path: '/products/3',
-            },
-            willRespondWith: {
-              status: 404,
-              headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-              },
-              body: like(productNotFoundErrorResponse),
-            },
-          });
-        });
+        // beforeAll(() => {
+        //   provider.addInteraction({
+        //     state: 'products id 3 does not exist',
+        //     uponReceiving: 'get error product not found',
+        //     withRequest: {
+        //       method: 'GET',
+        //       path: '/products/3',
+        //     },
+        //     willRespondWith: {
+        //       status: 404,
+        //       headers: {
+        //         'Content-Type': 'application/json; charset=utf-8',
+        //       },
+        //       body: like(productNotFoundErrorResponse),
+        //     },
+        //   });
+        // });
 
         it('return not found error', (done) => {
           try {
@@ -140,7 +141,6 @@ pactWith(
               'Request failed with status code 404',
             );
           } finally {
-            console.log('done 1111');
             done();
           }
         });
