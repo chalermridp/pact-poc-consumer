@@ -127,7 +127,7 @@ describe('Pact', () => {
           console.log('beforeAll product exists 444');
         });
 
-        it('return product', (done) => {
+        it('return product id 1', (done) => {
           console.log('it product exists 555');
           productsApi.setUrl(provider.mockService.baseUrl);
           productsApi.getById(1).then((response) => {
@@ -159,7 +159,7 @@ describe('Pact', () => {
           console.log('beforeAll product does not exists 444');
         });
 
-        it('got not found error', (done) => {
+        it('return not found error', (done) => {
           console.log('it product does not exists 555');
           productsApi.setUrl(provider.mockService.baseUrl);
           expect(productsApi.getById(3)).rejects.toThrow(
