@@ -1,0 +1,110 @@
+{
+  "consumer": {
+    "name": "PactPocConsumer"
+  },
+  "provider": {
+    "name": "PactPocProvider"
+  },
+  "interactions": [
+    {
+      "description": "get all products",
+      "providerState": "products exist",
+      "request": {
+        "method": "GET",
+        "path": "/products"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "code": 200,
+          "data": {
+            "products": [
+              {
+                "id": "1",
+                "sku": "111",
+                "name_en": "water",
+                "price": 30,
+                "is_active": true
+              },
+              {
+                "id": "2",
+                "sku": "222",
+                "name_en": "shoes",
+                "price": 40,
+                "is_active": false
+              }
+            ]
+          }
+        },
+        "matchingRules": {
+          "$.body": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "get product with id 1",
+      "providerState": "products id 1 exists",
+      "request": {
+        "method": "GET",
+        "path": "/products/1"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "code": 200,
+          "data": {
+            "product": {
+              "id": "1",
+              "sku": "111",
+              "name_en": "water",
+              "price": 30,
+              "is_active": true
+            }
+          }
+        },
+        "matchingRules": {
+          "$.body": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "get error product not found",
+      "providerState": "products id 3 does not exist",
+      "request": {
+        "method": "GET",
+        "path": "/products/3"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "code": 404,
+          "error_name": "not_found",
+          "error_message": "product not found"
+        },
+        "matchingRules": {
+          "$.body": {
+            "match": "type"
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}

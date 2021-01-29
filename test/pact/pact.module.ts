@@ -6,6 +6,7 @@ import path = require('path');
   imports: [
     PactConsumerModule.register({
       consumer: {
+        port: 5000,
         dir: path.resolve(process.cwd(), 'pacts'),
         log: path.resolve(process.cwd(), 'logs', 'pact.log'),
         logLevel: 'info',
