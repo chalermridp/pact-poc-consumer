@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Pact between PactPocConsumer and PactPocProvider with 30000 ms timeout for Pact get all products return all products 1`] = `
+Object {
+  "id": Any<String>,
+  "is_active": Any<Boolean>,
+  "name_en": Any<String>,
+  "price": Any<Number>,
+  "sku": Any<String>,
+}
+`;
+
+exports[`Pact between PactPocConsumer and PactPocProvider with 30000 ms timeout for Pact get all products return all products 2`] = `
+Object {
+  "id": Any<String>,
+  "is_active": Any<Boolean>,
+  "name_en": Any<String>,
+  "price": Any<Number>,
+  "sku": Any<String>,
+}
+`;
+
+exports[`Pact between PactPocConsumer and PactPocProvider with 30000 ms timeout for Pact get product by id product exists return product id 1 1`] = `
+Object {
+  "id": Any<String>,
+  "is_active": Any<Boolean>,
+  "name_en": Any<String>,
+  "price": Any<Number>,
+  "sku": Any<String>,
+}
+`;

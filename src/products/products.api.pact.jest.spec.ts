@@ -2,7 +2,7 @@ import { pactWith } from 'jest-pact';
 import { Test } from '@nestjs/testing/test';
 import { ProductsAPI } from './products.api';
 import { ProductsModule } from './products.module';
-import { like } from '@pact-foundation/pact/dsl/matchers';
+import { boolean, like } from '@pact-foundation/pact/dsl/matchers';
 
 pactWith(
   { consumer: 'PactPocConsumer', provider: 'PactPocProvider' },
@@ -81,7 +81,18 @@ pactWith(
       it('return all products', (done) => {
         productsApi.getAll().then((response) => {
           expect(response.status).toBe(200);
-          expect(response.data).toEqual(allProductsResponse);
+          // expect(response.data).toEqual(allProductsResponse);
+
+          expect(response.data.code).toBe(200);
+          response.data.data.products.forEach((product) => {
+            expect(product).toMatchSnapshot({
+              id: expect.any(String),
+              sku: expect.any(String),
+              name_en: expect.any(String),
+              price: expect.any(Number),
+              is_active: expect.any(Boolean),
+            });
+          });
           done();
         }, done);
       });
@@ -110,7 +121,16 @@ pactWith(
         it('return product id 1', (done) => {
           productsApi.getById(1).then((response) => {
             expect(response.status).toBe(200);
-            expect(response.data).toEqual(productResponse);
+            // expect(response.data).toEqual(productResponse);
+
+            expect(response.data.code).toBe(200);
+            expect(response.data.data.product).toMatchSnapshot({
+              id: expect.any(String),
+              sku: expect.any(String),
+              name_en: expect.any(String),
+              price: expect.any(Number),
+              is_active: expect.any(Boolean),
+            });
             done();
           }, done);
         });
